@@ -43,13 +43,13 @@ public class RxKeyboard: NSObject, RxKeyboardType {
   public let isHidden: Driver<Bool>
     
   /// An observable keyboard appearance animation duration
-  public let duration = Variable<Double>(0.0)
+    public let duration = BehaviorRelay<Double>(value: 0.0)
 
   /// An observable keyboard appearance direction
-  public let isShowing = Variable<Bool>(true)
+    public let isShowing = BehaviorRelay<Bool>(value: true)
 
   /// An observable panning flag
-  public let isPanning = Variable<Bool>(false)
+    public let isPanning = BehaviorRelay<Bool>(value: false)
 
   // MARK: Private
 
@@ -99,8 +99,8 @@ public class RxKeyboard: NSObject, RxKeyboardType {
         .map {
             ($0.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0.0
         }
-        .bindTo(duration)
-        .addDisposableTo(disposeBag)
+        .bind(to:duration)
+        .disposed(by: disposeBag)
     
     // Keyboard direction
     Observable
@@ -109,14 +109,14 @@ public class RxKeyboard: NSObject, RxKeyboardType {
             NotificationCenter.default.rx.notification(UIResponder.keyboardWillHideNotification).asObservable().map { _ in false }
         )
         .merge()
-        .bindTo(isShowing)
-        .addDisposableTo(disposeBag)
+        .bind(to: isShowing)
+        .disposed(by: disposeBag)
     
     // Panning flag
     panRecognizer.rx.event
         .map { $0.state == .began || $0.state == .changed }
-        .bindTo(isPanning)
-        .addDisposableTo(disposeBag)
+        .bind(to: isPanning)
+        .disposed(by: disposeBag)
 
     // keyboard will change frame
     let willChangeFrame = NotificationCenter.default.rx.notification(keyboardWillChangeFrame)
@@ -210,4 +210,3 @@ extension RxKeyboard: UIGestureRecognizerDelegate {
 
 }
 #endif
-
